@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
+  <title id="title">Chengtai Li</title>
+  <desc id="desc">BSc and PhD alumnus of the University of Nottingham Ningbo China</desc>
+
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#080D1A"/>
+      <stop offset="0.58" stop-color="#111B34"/>
+      <stop offset="1" stop-color="#0A1425"/>
+    </linearGradient>
+    <radialGradient id="blueGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#2878FF" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#2878FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="violetGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#8C5CFF" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#8C5CFF" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#B8CBFF" stroke-opacity="0.065"/>
+    </pattern>
+    <clipPath id="cardClip">
+      <rect width="1200" height="320" rx="28"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#cardClip)">
+    <rect width="1200" height="320" fill="url(#background)"/>
+    <rect width="1200" height="320" fill="url(#grid)"/>
+    <circle cx="1080" cy="40" r="280" fill="url(#blueGlow)"/>
+    <circle cx="760" cy="360" r="290" fill="url(#violetGlow)"/>
+
+    <g font-family="Arial">
+      <rect x="72" y="51" width="151" height="30" rx="15" fill="#6FA4FF" fill-opacity="0.12" stroke="#8DB3FF" stroke-opacity="0.35"/>
+      <circle cx="91" cy="66" r="4" fill="#78A9FF"/>
+      <text x="105" y="71" fill="#B9CEFF" font-size="12" font-weight="bold" letter-spacing="1.4">UNNC ALUMNUS</text>
+
+      <text x="72" y="151" fill="#F7F9FF" font-size="62" font-weight="bold" letter-spacing="-1.4">Chengtai Li</text>
+      <text x="75" y="193" fill="#C3CCE0" font-size="20" font-weight="normal">BSc &amp; PhD · University of Nottingham Ningbo China</text>
+
+      <line x1="75" y1="224" x2="625" y2="224" stroke="#AFC2EC" stroke-opacity="0.18"/>
+      <text x="75" y="258" fill="#8FA3C7" font-size="14" font-weight="normal" letter-spacing="0.9">MACHINE LEARNING  ·  VISUAL REASONING  ·  RESEARCH TOOLS</text>
+    </g>
+  </g>
+
+  <rect x="0.75" y="0.75" width="1198.5" height="318.5" rx="27.25" fill="none" stroke="#AFC5FF" stroke-opacity="0.13" stroke-width="1.5"/>
+</svg>
