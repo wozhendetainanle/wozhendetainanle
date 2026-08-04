@@ -1,51 +1,51 @@
-<!-- Profile README for github.com/wozhendetainanle -->
-
 <p align="center">
-  <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=0:7F00FF,50:E100FF,100:00C9FF&height=230&section=header&text=Chengtai%20Li&fontSize=64&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=BSc%20%26%20PhD%20%C2%B7%20UNNC&descAlignY=60&descSize=21" alt="Chengtai Li banner" />
+  <img src="./assets/profile-header.svg" width="100%" alt="Chengtai Li — BSc and PhD, UNNC" />
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=23&duration=2800&pause=900&color=8B5CF6&center=true&vCenter=true&width=650&lines=Hi%2C+I'm+Chengtai+Li+%F0%9F%91%8B;BSc+%26+PhD+graduate+from+UNNC;Welcome+to+my+corner+of+GitHub" alt="Typing introduction" />
+  <a href="https://github.com/wozhendetainanle?tab=repositories">repositories</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/wozhendetainanle/Daily-Arxiv">reading archive</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/wozhendetainanle">github</a>
 </p>
+
+## About
+
+I'm **Chengtai Li**. I earned both my **BSc** and **PhD** from the **University of Nottingham Ningbo China (UNNC)**.
+
+My public work spans machine learning, compositional and visual reasoning, and lightweight tools for research.
+
+<p>
+  <img src="https://img.shields.io/badge/Machine_Learning-1F6FEB?style=flat-square&labelColor=0D1117" alt="Machine Learning" />
+  <img src="https://img.shields.io/badge/Visual_Reasoning-7C3AED?style=flat-square&labelColor=0D1117" alt="Visual Reasoning" />
+  <img src="https://img.shields.io/badge/Research_Tooling-0891B2?style=flat-square&labelColor=0D1117" alt="Research Tooling" />
+</p>
+
+## Selected work
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3><a href="https://github.com/wozhendetainanle/R3PCL">R3PCL</a></h3>
+      <p>Regression-residual reasoning with pseudo-labeled contrastive learning for complex compositional relations.</p>
+      <p><code>Python</code> <code>compositional reasoning</code></p>
+    </td>
+    <td width="50%" valign="top">
+      <h3><a href="https://github.com/wozhendetainanle/DSRF">DSRF</a></h3>
+      <p>A dynamic and scalable reasoning framework for solving Raven's Progressive Matrices.</p>
+      <p><code>visual reasoning</code> <code>RPM</code></p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top">
+      <h3><a href="https://github.com/wozhendetainanle/Daily-Arxiv">Daily-Arxiv</a></h3>
+      <p>A curated daily reading archive covering machine learning, reasoning, optimization, and adjacent research areas.</p>
+      <p><code>paper tracking</code> <code>research notes</code></p>
+    </td>
+  </tr>
+</table>
 
 <p align="center">
-  <a href="https://github.com/wozhendetainanle?tab=followers">
-    <img src="https://img.shields.io/github/followers/wozhendetainanle?style=for-the-badge&logo=github&label=Followers&color=7F00FF&labelColor=161B22" alt="GitHub followers" />
-  </a>
-  <img src="https://komarev.com/ghpvc/?username=wozhendetainanle&label=Profile%20views&color=00C9FF&style=for-the-badge" alt="Profile views" />
+  <sub>Thanks for stopping by.</sub>
 </p>
-
-## ✦ About Me
-
-```text
-Name        Chengtai Li
-Education   BSc & PhD
-Alma mater  University of Nottingham Ningbo China (UNNC)
-```
-
-Hi! I'm **Chengtai Li**. I completed both my bachelor's degree and PhD at the **University of Nottingham Ningbo China (UNNC)**.
-
-Welcome to my space for projects, experiments, and notes.
-
-## ✦ GitHub at a Glance
-
-<p align="center">
-  <img height="170" src="https://github-readme-stats.vercel.app/api?username=wozhendetainanle&show_icons=true&theme=tokyonight&hide_border=true&bg_color=00000000&rank_icon=github" alt="Chengtai's GitHub stats" />
-  <img height="170" src="https://streak-stats.demolab.com?user=wozhendetainanle&theme=tokyonight&hide_border=true&background=00000000" alt="Chengtai's GitHub streak" />
-</p>
-
-<p align="center">
-  <img width="95%" src="https://github-readme-activity-graph.vercel.app/graph?username=wozhendetainanle&bg_color=00000000&color=8B5CF6&line=00C9FF&point=E100FF&area=true&hide_border=true" alt="Chengtai's contribution graph" />
-</p>
-
-## ✦ Find Me on GitHub
-
-<p align="center">
-  <a href="https://github.com/wozhendetainanle">
-    <img src="https://img.shields.io/badge/GitHub-wozhendetainanle-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub profile" />
-  </a>
-</p>
-
-<p align="center"><sub>Thanks for visiting ✦</sub></p>
-
-<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=0:00C9FF,50:E100FF,100:7F00FF&height=110&section=footer" alt="Footer wave" />
