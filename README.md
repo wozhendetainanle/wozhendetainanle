@@ -22,30 +22,6 @@ My public work spans machine learning, compositional and visual reasoning, and l
   <img src="https://img.shields.io/badge/Research_Tooling-0891B2?style=flat-square&labelColor=0D1117" alt="Research Tooling" />
 </p>
 
-## Selected work
-
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <h3><a href="https://github.com/wozhendetainanle/R3PCL">R3PCL</a></h3>
-      <p>Regression-residual reasoning with pseudo-labeled contrastive learning for complex compositional relations.</p>
-      <p><code>Python</code> <code>compositional reasoning</code></p>
-    </td>
-    <td width="50%" valign="top">
-      <h3><a href="https://github.com/wozhendetainanle/DSRF">DSRF</a></h3>
-      <p>A dynamic and scalable reasoning framework for solving Raven's Progressive Matrices.</p>
-      <p><code>visual reasoning</code> <code>RPM</code></p>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2" valign="top">
-      <h3><a href="https://github.com/wozhendetainanle/Daily-Arxiv">Daily-Arxiv</a></h3>
-      <p>A curated daily reading archive covering machine learning, reasoning, optimization, and adjacent research areas.</p>
-      <p><code>paper tracking</code> <code>research notes</code></p>
-    </td>
-  </tr>
-</table>
-
 <p align="center">
   <sub>Thanks for stopping by.</sub>
 </p>
