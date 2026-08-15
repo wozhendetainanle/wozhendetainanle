@@ -26,8 +26,21 @@ jobs:
         with:
           github_user_name: ${{ github.repository_owner }}
           outputs: |
-            dist/contribution-loop.gif?color_snake=#AD7A62&color_dots=#D8D4CC,#CFDAD5,#A9C2B9,#6B8583,#4E6361&color_background=#EFECE6
-            dist/contribution-loop-dark.gif?color_snake=#B3A075&color_dots=#2A2D2C,#36433F,#4E6361,#6B8583,#A9C2B9&color_background=#161817
+            dist/contribution-data.gif?color_snake=#AD7A62&color_dots=#D8D4CC,#CFDAD5,#A9C2B9,#6B8583,#4E6361&color_background=#EFECE6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Render the editorial contribution serpent
+        run: |
+          python -m pip install --quiet pillow
+          python .github/scripts/render_contribution_serpent.py \
+            --source dist/contribution-data.gif \
+            --light-output dist/contribution-serpent-light.gif \
+            --dark-output dist/contribution-serpent-dark.gif
+          rm dist/contribution-data.gif
 
       - name: Publish generated files to the output branch
         uses: crazy-max/ghaction-github-pages@v4
