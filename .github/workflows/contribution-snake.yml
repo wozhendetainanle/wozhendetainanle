@@ -26,13 +26,15 @@ jobs:
         with:
           github_user_name: ${{ github.repository_owner }}
           outputs: |
-            dist/raw-contribution-light.gif?color_snake=#5E7288&color_dots=#F8F8F7,#E5ECEA,#A9C2B9,#6B8583,#4E6361&color_background=#F8F8F7
+            dist/raw-contribution-light.gif?color_snake=#5E7288&color_dots=#ECE7E1,#E5ECEA,#A9C2B9,#6B8583,#4E6361&color_background=#ECE7E1
             dist/raw-contribution-dark.gif?color_snake=#B3A075&color_dots=#161817,#26302E,#43504D,#6B8583,#A9C2B9&color_background=#161817
 
       - name: Set animations on framed canvases
         run: |
-          python -m pip install --quiet pillow
-          python - <<'PY'
+          python -m venv .gif-venv
+          .gif-venv/bin/python -m pip install --quiet pillow
+          .gif-venv/bin/python - <<'PY'
+          import shutil
           from pathlib import Path
           from PIL import Image, ImageDraw, ImageSequence
 
@@ -73,20 +75,34 @@ jobs:
                   optimize=True,
               )
 
-          frame_animation(
-              "dist/raw-contribution-light.gif",
-              "dist/contribution-loop.gif",
-              "#ECE7E1",
-              "#83705C",
-              "#4E6361",
-          )
-          frame_animation(
-              "dist/raw-contribution-dark.gif",
-              "dist/contribution-loop-dark.gif",
-              "#161817",
-              "#424744",
-              "#B3A075",
-          )
+          try:
+              frame_animation(
+                  "dist/raw-contribution-light.gif",
+                  "dist/contribution-loop.gif",
+                  "#ECE7E1",
+                  "#83705C",
+                  "#4E6361",
+              )
+              frame_animation(
+                  "dist/raw-contribution-dark.gif",
+                  "dist/contribution-loop-dark.gif",
+                  "#161817",
+                  "#424744",
+                  "#B3A075",
+              )
+          except Exception as error:
+              shutil.copyfile(
+                  "dist/raw-contribution-light.gif",
+                  "dist/contribution-loop.gif",
+              )
+              shutil.copyfile(
+                  "dist/raw-contribution-dark.gif",
+                  "dist/contribution-loop-dark.gif",
+              )
+              Path("dist/render-error.txt").write_text(
+                  f"{type(error).__name__}: {error}\n",
+                  encoding="utf-8",
+              )
 
           Path("dist/raw-contribution-light.gif").unlink()
           Path("dist/raw-contribution-dark.gif").unlink()
