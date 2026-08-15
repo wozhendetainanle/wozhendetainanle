@@ -21,6 +21,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Check out profile source
+        uses: actions/checkout@v4
+
       - name: Generate contribution animations
         uses: Platane/snk@v3
         with:
