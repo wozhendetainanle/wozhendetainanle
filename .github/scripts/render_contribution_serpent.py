@@ -4,50 +4,52 @@ import argparse
 import math
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont, ImageSequence
 
 
-W, H = 880, 238
+W, H, SCALE = 880, 240, 2
 COLS, ROWS = 53, 7
-CELL, GAP = 10, 5
-PITCH = CELL + GAP
-GRID_W = COLS * PITCH - GAP
-GRID_H = ROWS * PITCH - GAP
-GX = (W - GRID_W) // 2
-GY = 53
+CELL, PITCH = 5, 8
+GX, GY = 202, 75
+GRID_W = (COLS - 1) * PITCH
+GRID_H = (ROWS - 1) * PITCH
 
 SOURCE_COLORS = ["#D8D4CC", "#CFDAD5", "#A9C2B9", "#6B8583", "#4E6361"]
 
 PALETTES = {
     "light": {
-        "matte": "#FFFFFF",
-        "paper": "#F2EFE9",
-        "border": "#DDD8CF",
-        "empty": "#DDD9D1",
-        "levels": ["#CEDBD5", "#ABC4BB", "#76968F", "#506B68"],
-        "snake_tail": "#C58B70",
-        "snake_head": "#9E5744",
-        "shadow": "#D8CDC4",
-        "eye": "#352F2C",
-        "tongue": "#7F443B",
+        "bg": "#F1EEE8",
+        "ink": "#4E5552",
+        "muted": "#A9A49A",
+        "faint": "#D8D4CC",
+        "grid": "#D8D4CC",
+        "levels": ["#CEDBD5", "#A9C2B9", "#6B8583", "#4E6361"],
+        "terracotta": "#A96049",
+        "terracotta_soft": "#C98B70",
+        "teal": "#5F7C76",
+        "teal_soft": "#9CB6AE",
+        "gold": "#C49A55",
+        "shadow": "#D7CFC5",
     },
     "dark": {
-        "matte": "#0D1117",
-        "paper": "#1B1E1C",
-        "border": "#343A36",
-        "empty": "#303530",
+        "bg": "#141816",
+        "ink": "#C7CEC9",
+        "muted": "#76817B",
+        "faint": "#303732",
+        "grid": "#2D342F",
         "levels": ["#3E4B46", "#607A72", "#8DA99F", "#B8CDC6"],
-        "snake_tail": "#B7745B",
-        "snake_head": "#E2A083",
-        "shadow": "#101311",
-        "eye": "#2A2522",
-        "tongue": "#F1B8A4",
+        "terracotta": "#E0A083",
+        "terracotta_soft": "#B8745C",
+        "teal": "#8DA99F",
+        "teal_soft": "#536D66",
+        "gold": "#D5AC69",
+        "shadow": "#0B0E0C",
     },
 }
 
 
-def rgb(hex_color: str) -> tuple[int, int, int]:
-    value = hex_color.lstrip("#")
+def rgb(value: str) -> tuple[int, int, int]:
+    value = value.lstrip("#")
     return tuple(int(value[index : index + 2], 16) for index in (0, 2, 4))
 
 
@@ -56,108 +58,70 @@ def mix(first: str, second: str, amount: float) -> tuple[int, int, int]:
     return tuple(round(x + (y - x) * amount) for x, y in zip(a, b))
 
 
-def contribution_levels(source: Path) -> list[list[int]]:
+def levels_from_source(source: Path) -> list[list[int]]:
     image = Image.open(source)
-    image.seek(0)
-    frame = image.convert("RGB")
     colors = [rgb(color) for color in SOURCE_COLORS]
-    levels: list[list[int]] = []
-
-    for row in range(ROWS):
-        line = []
-        for column in range(COLS):
-            sample = frame.getpixel((22 + column * 16, 22 + row * 16))
-            level = min(
-                range(len(colors)),
-                key=lambda index: sum(
-                    (sample[channel] - colors[index][channel]) ** 2
-                    for channel in range(3)
-                ),
-            )
-            line.append(level)
-        levels.append(line)
-
+    levels = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+    for source_frame in ImageSequence.Iterator(image):
+        frame = source_frame.convert("RGB")
+        for row in range(ROWS):
+            for column in range(COLS):
+                sample = frame.getpixel((22 + column * 16, 22 + row * 16))
+                distances = [
+                    sum((sample[channel] - color[channel]) ** 2 for channel in range(3))
+                    for color in colors
+                ]
+                candidate = min(range(5), key=distances.__getitem__)
+                if distances[candidate] <= 12**2 * 3:
+                    levels[row][column] = max(levels[row][column], candidate)
     return levels
 
 
-def draw_cell(
-    draw: ImageDraw.ImageDraw,
-    center_x: float,
-    center_y: float,
-    fill: str,
-) -> None:
-    half = CELL / 2
-    draw.rounded_rectangle(
-        (
-            center_x - half,
-            center_y - half,
-            center_x + half,
-            center_y + half,
-        ),
-        radius=3,
-        fill=fill,
-    )
+def build_grid_route() -> tuple[list[tuple[float, float]], list[float]]:
+    left, right = GX, GX + GRID_W
+    top = GY
+    route = [(left - 22, top)]
 
-
-def build_closed_route() -> tuple[list[tuple[float, float]], float]:
-    points: list[tuple[float, float]] = []
-    left = GX + CELL / 2
-    right = GX + GRID_W - CELL / 2
-    top = GY + CELL / 2
-    bottom = GY + GRID_H - CELL / 2
-    entry_x = GX - 31
-
-    points.append((entry_x, top))
-    for row in range(ROWS):
-        y = top + row * PITCH
-        points.append((right if row % 2 == 0 else left, y))
-        if row < ROWS - 1:
-            points.append((right if row % 2 == 0 else left, y + PITCH))
-
-    grid_end_index = len(points) - 1
-    points.extend(
-        [
-            (GX + GRID_W + 30, bottom),
-            (GX + GRID_W + 30, H - 28),
-            (GX - 31, H - 28),
-            (GX - 31, top),
-        ]
-    )
-
-    route: list[tuple[float, float]] = [points[0]]
-    grid_end_distance = 0.0
-    total = 0.0
-    for index, (start, end) in enumerate(zip(points, points[1:]), start=1):
-        dx, dy = end[0] - start[0], end[1] - start[1]
-        length = math.hypot(dx, dy)
-        steps = max(1, math.ceil(length / 3.0))
+    def append_line(end: tuple[float, float], wave_phase: float = 0) -> None:
+        start = route[-1]
+        length = math.dist(start, end)
+        steps = max(1, math.ceil(length / 2))
         for step in range(1, steps + 1):
+            amount = step / steps
+            envelope = math.sin(math.pi * amount)
             route.append(
                 (
-                    start[0] + dx * step / steps,
-                    start[1] + dy * step / steps,
+                    start[0] + (end[0] - start[0]) * amount,
+                    start[1]
+                    + (end[1] - start[1]) * amount
+                    + math.sin(amount * math.tau * 2 + wave_phase) * envelope * 1.1,
                 )
             )
-        total += length
-        if index == grid_end_index:
-            grid_end_distance = total
 
-    return route, grid_end_distance
+    for row in range(ROWS):
+        y = top + row * PITCH
+        append_line((right if row % 2 == 0 else left, y), row * 0.8)
+        if row < ROWS - 1:
+            center_x = right if row % 2 == 0 else left
+            center_y = y + PITCH / 2
+            for step in range(1, 17):
+                angle = -math.pi / 2 + math.pi * step / 16
+                direction = 1 if row % 2 == 0 else -1
+                route.append(
+                    (
+                        center_x + direction * PITCH / 2 * math.cos(angle),
+                        center_y + PITCH / 2 * math.sin(angle),
+                    )
+                )
+
+    distances = [0.0]
+    for start, end in zip(route, route[1:]):
+        distances.append(distances[-1] + math.dist(start, end))
+    return route, distances
 
 
-def cumulative_distances(points: list[tuple[float, float]]) -> list[float]:
-    result = [0.0]
-    for start, end in zip(points, points[1:]):
-        result.append(result[-1] + math.dist(start, end))
-    return result
-
-
-def point_at(
-    points: list[tuple[float, float]],
-    distances: list[float],
-    distance: float,
-) -> tuple[float, float]:
-    distance %= distances[-1]
+def point_at(route, distances, distance):
+    distance = max(0.0, min(distance, distances[-1]))
     low, high = 0, len(distances) - 1
     while low + 1 < high:
         middle = (low + high) // 2
@@ -165,187 +129,257 @@ def point_at(
             low = middle
         else:
             high = middle
-
-    start, end = points[low], points[low + 1]
     span = distances[low + 1] - distances[low]
     amount = 0 if span == 0 else (distance - distances[low]) / span
+    start, end = route[low], route[low + 1]
     return (
         start[0] + (end[0] - start[0]) * amount,
         start[1] + (end[1] - start[1]) * amount,
     )
 
 
-def route_distance_for_cell(row: int, column: int) -> float:
-    row_width = GRID_W - CELL
-    distance = 31 + CELL / 2
+def cell_distance(row: int, column: int) -> float:
+    row_width = GRID_W
+    distance = 22
     for _ in range(row):
-        distance += row_width + PITCH
-    position = (
-        column * PITCH
-        if row % 2 == 0
-        else (COLS - 1 - column) * PITCH
-    )
+        distance += row_width + math.pi * PITCH / 2
+    position = column * PITCH if row % 2 == 0 else (COLS - 1 - column) * PITCH
     return distance + position
 
 
-def draw_frame(
-    theme: str,
-    progress: float,
-    levels: list[list[int]],
-    route: list[tuple[float, float]],
-    distances: list[float],
-    grid_end: float,
-) -> Image.Image:
-    palette = PALETTES[theme]
-    image = Image.new("RGB", (W, H), palette["matte"])
+def scale_points(points):
+    return [(x * SCALE, y * SCALE) for x, y in points]
+
+
+def draw_monogram(draw: ImageDraw.ImageDraw, palette, phase: float) -> None:
+    center_x, center_y, radius = 92, 94, 47
+    box = tuple(value * SCALE for value in (
+        center_x - radius,
+        center_y - radius,
+        center_x + radius,
+        center_y + radius,
+    ))
+    draw.arc(
+        box,
+        start=38,
+        end=322,
+        fill=palette["terracotta"],
+        width=6 * SCALE,
+    )
+
+    # The L doubles as a two-link embodied trajectory.
+    draw.line(
+        scale_points([(104, 55), (104, 132), (148, 132)]),
+        fill=palette["teal"],
+        width=5 * SCALE,
+        joint="curve",
+    )
+    for x, y in ((104, 55), (104, 132), (148, 132)):
+        pulse = 3.3 + 0.45 * math.sin(phase * math.tau * 2 + x)
+        draw.ellipse(
+            tuple(value * SCALE for value in (x - pulse, y - pulse, x + pulse, y + pulse)),
+            fill=palette["gold"] if (x, y) == (148, 132) else palette["bg"],
+            outline=palette["teal"],
+            width=2 * SCALE,
+        )
+
+    font_name = ImageFont.load_default(size=18 * SCALE)
+    draw.text((45 * SCALE, 157 * SCALE), "CHENGTAI LI", font=font_name, fill=palette["ink"])
+
+
+GRAPH_NODES = [(661, 66), (693, 51), (722, 78), (684, 103), (727, 119), (751, 91)]
+GRAPH_EDGES = [(0, 1), (0, 3), (1, 2), (1, 3), (2, 5), (3, 4), (4, 5), (2, 4)]
+
+
+def draw_reasoning(draw: ImageDraw.ImageDraw, palette, phase: float) -> tuple[float, float]:
+    active = max(0.0, min(1.0, (phase - 0.70) / 0.18))
+    for edge_index, (first, second) in enumerate(GRAPH_EDGES):
+        a, b = GRAPH_NODES[first], GRAPH_NODES[second]
+        edge_color = mix(palette["faint"], palette["teal"], active * 0.72)
+        draw.line(scale_points([a, b]), fill=edge_color, width=SCALE)
+        if active > 0:
+            amount = (active * 2.1 - edge_index * 0.13) % 1
+            pulse_x = a[0] + (b[0] - a[0]) * amount
+            pulse_y = a[1] + (b[1] - a[1]) * amount
+            radius = 1.7 * SCALE
+            draw.ellipse(
+                (
+                    pulse_x * SCALE - radius,
+                    pulse_y * SCALE - radius,
+                    pulse_x * SCALE + radius,
+                    pulse_y * SCALE + radius,
+                ),
+                fill=palette["gold"],
+            )
+    for index, (x, y) in enumerate(GRAPH_NODES):
+        node_active = max(0, min(1, active * 7 - index * 0.8))
+        radius = (3 + node_active * 1.4) * SCALE
+        draw.ellipse(
+            (x * SCALE - radius, y * SCALE - radius, x * SCALE + radius, y * SCALE + radius),
+            fill=mix(palette["bg"], palette["teal_soft"], node_active),
+            outline=palette["teal"],
+            width=2 * SCALE,
+        )
+    return GRAPH_NODES[-1]
+
+
+def draw_robot(draw: ImageDraw.ImageDraw, palette, phase: float) -> tuple[float, float]:
+    action = max(0.0, min(1.0, (phase - 0.84) / 0.12))
+    eased = action * action * (3 - 2 * action)
+    base = (783, 190)
+    shoulder = (793, 165)
+    elbow = (820 - 8 * eased, 137 - 8 * eased)
+    wrist = (842 - 5 * eased, 107 + 3 * eased)
+    target = (851, 91)
+
+    draw.ellipse(tuple(value * SCALE for value in (765, 186, 801, 201)), fill=palette["faint"])
+    draw.line(scale_points([shoulder, elbow, wrist]), fill=palette["teal"], width=8 * SCALE, joint="curve")
+    for x, y in (shoulder, elbow, wrist):
+        radius = 5 * SCALE
+        draw.ellipse(
+            (x * SCALE - radius, y * SCALE - radius, x * SCALE + radius, y * SCALE + radius),
+            fill=palette["bg"],
+            outline=palette["teal"],
+            width=3 * SCALE,
+        )
+
+    direction_x, direction_y = target[0] - wrist[0], target[1] - wrist[1]
+    norm = max(0.001, math.hypot(direction_x, direction_y))
+    direction_x, direction_y = direction_x / norm, direction_y / norm
+    perpendicular_x, perpendicular_y = -direction_y, direction_x
+    opening = 6 * (1 - eased) + 2
+    palm = (wrist[0] + direction_x * 7, wrist[1] + direction_y * 7)
+    draw.line(scale_points([wrist, palm]), fill=palette["terracotta"], width=4 * SCALE)
+    for side in (-1, 1):
+        start = (
+            palm[0] + perpendicular_x * opening * side,
+            palm[1] + perpendicular_y * opening * side,
+        )
+        end = (
+            target[0] - direction_x * 2 + perpendicular_x * opening * 0.45 * side,
+            target[1] - direction_y * 2 + perpendicular_y * opening * 0.45 * side,
+        )
+        draw.line(scale_points([start, end]), fill=palette["terracotta"], width=3 * SCALE)
+
+    target_radius = (3.5 + 0.6 * math.sin(phase * math.tau * 4)) * SCALE
+    draw.ellipse(
+        (
+            target[0] * SCALE - target_radius,
+            target[1] * SCALE - target_radius,
+            target[0] * SCALE + target_radius,
+            target[1] * SCALE + target_radius,
+        ),
+        fill=palette["gold"],
+    )
+    return target
+
+
+def draw_frame(theme: str, phase: float, levels, route, distances) -> Image.Image:
+    p = PALETTES[theme]
+    image = Image.new("RGB", (W * SCALE, H * SCALE), p["bg"])
     draw = ImageDraw.Draw(image)
 
-    draw.rounded_rectangle(
-        (7, 7, W - 8, H - 8),
-        radius=18,
-        fill=palette["paper"],
-        outline=palette["border"],
-        width=1,
-    )
+    # One quiet baseline binds identity, learning, reasoning, and action.
+    draw.line(scale_points([(178, 211), (855, 211)]), fill=p["faint"], width=SCALE)
+    draw_monogram(draw, p, phase)
 
-    total = distances[-1]
-    return_phase = max(
-        0.0,
-        min(1.0, (progress - grid_end) / max(1.0, total - grid_end)),
-    )
+    font = ImageFont.load_default(size=8 * SCALE)
+    draw.text((GX * SCALE, 48 * SCALE), "LEARN", font=font, fill=p["muted"])
 
+    snake_phase = min(1.0, phase / 0.70)
+    progress = distances[-1] * snake_phase
     for row in range(ROWS):
         for column in range(COLS):
-            center_x = GX + CELL / 2 + column * PITCH
-            center_y = GY + CELL / 2 + row * PITCH
+            x, y = GX + column * PITCH, GY + row * PITCH
             level = levels[row][column]
-            eaten = (
-                progress < grid_end
-                and route_distance_for_cell(row, column) <= progress
+            passed = cell_distance(row, column) <= progress
+            fill = p["grid"] if level == 0 or passed else p["levels"][level - 1]
+            wake = progress - cell_distance(row, column)
+            if 0 < wake < 80 and level == 0:
+                fill = mix(fill, p["teal_soft"], 0.5 * (1 - wake / 80))
+            half = CELL * SCALE / 2
+            draw.rounded_rectangle(
+                (x * SCALE - half, y * SCALE - half, x * SCALE + half, y * SCALE + half),
+                radius=2 * SCALE,
+                fill=fill,
             )
-            regrown = (
-                progress >= grid_end
-                and column / max(1, COLS - 1) <= return_phase
-            )
-            visible = not eaten if progress < grid_end else regrown
-            color = (
-                palette["empty"]
-                if level == 0 or not visible
-                else palette["levels"][level - 1]
-            )
-            draw_cell(draw, center_x, center_y, color)
 
-    body_count = 21
-    spacing = 10.2
-    body = [
-        point_at(route, distances, progress - index * spacing)
-        for index in range(body_count)
-    ]
-
-    for index in range(body_count - 1, -1, -1):
-        x, y = body[index]
-        taper = 1.0 - (index / body_count) * 0.42
-        radius = 6.7 * taper
+    body = [point_at(route, distances, progress - index * 4.8) for index in range(25)]
+    for index in range(23, -1, -1):
+        amount = index / 24
+        width = round((3.5 + 7 * (1 - amount)) * SCALE)
+        start, end = body[index + 1], body[index]
+        color = mix(p["terracotta"], p["terracotta_soft"], amount)
+        draw.line(scale_points([start, end]), fill=color, width=width)
+        radius = width / 2
         draw.ellipse(
-            (x - radius + 1, y - radius + 2, x + radius + 1, y + radius + 2),
-            fill=palette["shadow"],
-        )
-
-    for index in range(body_count - 1, -1, -1):
-        x, y = body[index]
-        taper = 1.0 - (index / body_count) * 0.42
-        radius = 6.5 * taper
-        color = mix(
-            palette["snake_head"],
-            palette["snake_tail"],
-            index / (body_count - 1),
-        )
-        draw.ellipse(
-            (x - radius, y - radius, x + radius, y + radius),
+            (end[0] * SCALE - radius, end[1] * SCALE - radius, end[0] * SCALE + radius, end[1] * SCALE + radius),
             fill=color,
         )
 
     head_x, head_y = body[0]
-    next_x, next_y = point_at(route, distances, progress + 7)
-    direction_x, direction_y = next_x - head_x, next_y - head_y
-    norm = max(0.001, math.hypot(direction_x, direction_y))
-    direction_x, direction_y = direction_x / norm, direction_y / norm
-    perpendicular_x, perpendicular_y = -direction_y, direction_x
-
+    next_x, next_y = point_at(route, distances, min(progress + 6, distances[-1]))
+    dx, dy = next_x - head_x, next_y - head_y
+    norm = max(0.001, math.hypot(dx, dy))
+    dx, dy = dx / norm, dy / norm
+    px, py = -dy, dx
     for side in (-1, 1):
-        eye_x = head_x + direction_x * 2.8 + perpendicular_x * side * 3.0
-        eye_y = head_y + direction_y * 2.8 + perpendicular_y * side * 3.0
+        eye_x = head_x + dx * 2.2 + px * side * 2.2
+        eye_y = head_y + dy * 2.2 + py * side * 2.2
+        radius = 1.1 * SCALE
         draw.ellipse(
-            (eye_x - 1.25, eye_y - 1.25, eye_x + 1.25, eye_y + 1.25),
-            fill=palette["eye"],
+            (eye_x * SCALE - radius, eye_y * SCALE - radius, eye_x * SCALE + radius, eye_y * SCALE + radius),
+            fill=p["bg"],
         )
 
-    if int(progress / 18) % 7 in (0, 1):
-        tongue_x = head_x + direction_x * 10.5
-        tongue_y = head_y + direction_y * 10.5
-        tongue_base_x = head_x + direction_x * 6.2
-        tongue_base_y = head_y + direction_y * 6.2
-        draw.line(
-            (tongue_base_x, tongue_base_y, tongue_x, tongue_y),
-            fill=palette["tongue"],
-            width=1,
-        )
-        draw.line(
-            (
-                tongue_x,
-                tongue_y,
-                tongue_x + direction_x * 3 + perpendicular_x * 2,
-                tongue_y + direction_y * 3 + perpendicular_y * 2,
-            ),
-            fill=palette["tongue"],
-            width=1,
-        )
-        draw.line(
-            (
-                tongue_x,
-                tongue_y,
-                tongue_x + direction_x * 3 - perpendicular_x * 2,
-                tongue_y + direction_y * 3 - perpendicular_y * 2,
-            ),
-            fill=palette["tongue"],
-            width=1,
+    graph_out = draw_reasoning(draw, p, phase)
+    robot_target = draw_robot(draw, p, phase)
+
+    # A single signal visibly turns accumulated activity into reasoning and action.
+    if phase >= 0.68:
+        signal_phase = min(1.0, (phase - 0.68) / 0.25)
+        signal_path = [
+            (GX + GRID_W, GY + GRID_H),
+            (642, 128),
+            *GRAPH_NODES,
+            (772, 116),
+            robot_target,
+        ]
+        segment_lengths = [math.dist(a, b) for a, b in zip(signal_path, signal_path[1:])]
+        total_length = sum(segment_lengths)
+        target_distance = total_length * signal_phase
+        traversed = 0.0
+        signal = signal_path[0]
+        for start, end, length in zip(signal_path, signal_path[1:], segment_lengths):
+            if traversed + length >= target_distance:
+                amount = (target_distance - traversed) / max(0.001, length)
+                signal = (
+                    start[0] + (end[0] - start[0]) * amount,
+                    start[1] + (end[1] - start[1]) * amount,
+                )
+                break
+            traversed += length
+        radius = 3.2 * SCALE
+        draw.ellipse(
+            (signal[0] * SCALE - radius, signal[1] * SCALE - radius, signal[0] * SCALE + radius, signal[1] * SCALE + radius),
+            fill=p["gold"],
         )
 
-    return image
+    return image.resize((W, H), Image.Resampling.LANCZOS)
 
 
-def render(
-    target: Path,
-    theme: str,
-    levels: list[list[int]],
-    route: list[tuple[float, float]],
-    distances: list[float],
-    grid_end: float,
-) -> None:
+def render(target: Path, theme: str, levels, route, distances) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
-    frame_count = 300
-    frames = [
-        draw_frame(
-            theme,
-            distances[-1] * index / frame_count,
-            levels,
-            route,
-            distances,
-            grid_end,
-        )
-        for index in range(frame_count)
-    ]
+    frames = [draw_frame(theme, index / 360, levels, route, distances) for index in range(360)]
     frames[0].save(
         target,
         save_all=True,
         append_images=frames[1:],
-        duration=55,
+        duration=70,
         loop=0,
         optimize=True,
         disposal=1,
     )
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, required=True)
@@ -353,11 +387,10 @@ def main() -> None:
     parser.add_argument("--dark-output", type=Path, required=True)
     args = parser.parse_args()
 
-    levels = contribution_levels(args.source)
-    route, grid_end = build_closed_route()
-    distances = cumulative_distances(route)
-    render(args.light_output, "light", levels, route, distances, grid_end)
-    render(args.dark_output, "dark", levels, route, distances, grid_end)
+    levels = levels_from_source(args.source)
+    route, distances = build_grid_route()
+    render(args.light_output, "light", levels, route, distances)
+    render(args.dark_output, "dark", levels, route, distances)
 
 
 if __name__ == "__main__":
