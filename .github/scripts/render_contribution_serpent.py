@@ -365,16 +365,37 @@ def draw_frame(theme: str, phase: float, levels, route, distances) -> Image.Imag
             fill=p["gold"],
         )
 
-    return image.resize((W, H), Image.Resampling.LANCZOS)
+    # Keep the 2x drawing surface in the exported GIF. GitHub displays the
+    # image at roughly 880 CSS pixels wide, so 1760 physical pixels preserve
+    # crisp type, graph edges, joints, and rounded contribution cells on
+    # Retina/HiDPI screens.
+    return image
 
 
 def render(target: Path, theme: str, levels, route, distances) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     frames = [draw_frame(theme, index / 360, levels, route, distances) for index in range(360)]
-    frames[0].save(
+
+    # A shared palette avoids the large per-frame color tables that would
+    # otherwise make the 2x GIF unnecessarily heavy. Sampling the beginning,
+    # reasoning, and action phases preserves every semantic accent color.
+    palette_source = Image.new("RGB", (W * SCALE, H * SCALE * 4))
+    for slot, frame_index in enumerate((0, 180, 285, 345)):
+        palette_source.paste(frames[frame_index], (0, slot * H * SCALE))
+    shared_palette = palette_source.quantize(
+        colors=160,
+        method=Image.Quantize.MEDIANCUT,
+        dither=Image.Dither.NONE,
+    )
+    quantized_frames = [
+        frame.quantize(palette=shared_palette, dither=Image.Dither.NONE)
+        for frame in frames
+    ]
+
+    quantized_frames[0].save(
         target,
         save_all=True,
-        append_images=frames[1:],
+        append_images=quantized_frames[1:],
         duration=70,
         loop=0,
         optimize=True,
