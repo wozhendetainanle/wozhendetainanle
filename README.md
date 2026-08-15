@@ -2,14 +2,6 @@
   <img src="./assets/profile-header.svg" width="100%" alt="Chengtai Li, machine learning and embodied intelligence researcher" />
 </p>
 
-<p align="center">
-  <a href="https://github.com/wozhendetainanle?tab=repositories">work</a>
-  &nbsp;&nbsp;/&nbsp;&nbsp;
-  <a href="https://github.com/wozhendetainanle/Daily-Arxiv">reading archive</a>
-  &nbsp;&nbsp;/&nbsp;&nbsp;
-  <a href="https://github.com/wozhendetainanle">profile</a>
-</p>
-
 <br />
 
 <p align="center">
