@@ -26,8 +26,8 @@ jobs:
         with:
           github_user_name: ${{ github.repository_owner }}
           outputs: |
-            dist/contribution-loop.gif?color_snake=#5E7288&color_dots=#ECE7E1,#D7D5CE,#A9C2B9,#6B8583,#4E6361&color_background=#ECE7E1
-            dist/contribution-loop-dark.gif?color_snake=#B3A075&color_dots=#161817,#26302E,#43504D,#6B8583,#A9C2B9&color_background=#161817
+            dist/contribution-loop.gif?color_snake=#AD7A62&color_dots=#D8D4CC,#CFDAD5,#A9C2B9,#6B8583,#4E6361&color_background=#EFECE6
+            dist/contribution-loop-dark.gif?color_snake=#B3A075&color_dots=#2A2D2C,#36433F,#4E6361,#6B8583,#A9C2B9&color_background=#161817
 
       - name: Publish generated files to the output branch
         uses: crazy-max/ghaction-github-pages@v4

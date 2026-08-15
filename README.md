@@ -1,5 +1,11 @@
+<h1 align="center">Chengtai Li</h1>
+
 <p align="center">
-  <img src="./assets/profile-header.svg" width="100%" alt="Chengtai Li, machine learning and embodied intelligence researcher" />
+  Machine Learning &nbsp;·&nbsp; Embodied Intelligence &nbsp;·&nbsp; Visual Reasoning
+</p>
+
+<p align="center">
+  <sub>BSc &amp; PhD · University of Nottingham Ningbo China</sub>
 </p>
 
 <br />
@@ -8,10 +14,6 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wozhendetainanle/wozhendetainanle/output/contribution-loop-dark.gif" />
     <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/wozhendetainanle/wozhendetainanle/output/contribution-loop.gif" />
-    <img src="https://raw.githubusercontent.com/wozhendetainanle/wozhendetainanle/output/contribution-loop.gif" alt="Animated GitHub contribution snake" />
+    <img src="https://raw.githubusercontent.com/wozhendetainanle/wozhendetainanle/output/contribution-loop.gif" width="100%" alt="Animated GitHub contribution snake" />
   </picture>
-</p>
-
-<p align="center">
-  <sub>an archive of small steps</sub>
 </p>
