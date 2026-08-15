@@ -29,11 +29,15 @@ jobs:
             dist/raw-contribution-light.gif?color_snake=#5E7288&color_dots=#ECE7E1,#E5ECEA,#A9C2B9,#6B8583,#4E6361&color_background=#ECE7E1
             dist/raw-contribution-dark.gif?color_snake=#B3A075&color_dots=#161817,#26302E,#43504D,#6B8583,#A9C2B9&color_background=#161817
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Set animations on framed canvases
         run: |
-          python -m venv .gif-venv
-          .gif-venv/bin/python -m pip install --quiet pillow
-          .gif-venv/bin/python - <<'PY'
+          python -m pip install --quiet pillow
+          python - <<'PY'
           import shutil
           from pathlib import Path
           from PIL import Image, ImageDraw, ImageSequence
